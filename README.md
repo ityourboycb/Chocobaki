@@ -1,115 +1,34 @@
 # Chocobaki
-A macOS app to copy music/video links and preview them inside the app.
-import Cocoa
-import AVKit
 
-class ViewController: NSViewController {
+Chocobaki is a lightweight macOS utility that copies music/video URLs to the clipboard and immediately previews them inside the app using `AVPlayer`.
 
-    @IBOutlet weak var urlTextField: NSTextField!
-    @IBOutlet weak var playerView: AVPlayerView!
-    @IBOutlet weak var statusLabel: NSTextField!
+## Current project layout
 
-    @IBAction func copyButtonClicked(_ sender: Any) {
-        let pasteboard = NSPasteboard.general
-        let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        guard let url = URL(string: urlString), url.scheme != nil else {
-            statusLabel.stringValue = "Invalid URL"
-            return
-        }
-        
-        pasteboard.clearContents()
-        pasteboard.setString(urlString, forType: .string)
-        statusLabel.stringValue = "Copied to clipboard!"
-        
-        playMedia(from: url)
-    }
-
-    private func playMedia(from url: URL) {
-        let player = AVPlayer(url: url)
-        playerView.player = player
-        player.play()
-    }
-}
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-</dict>
+```
 Chocobaki/
-├── Chocobaki.xcodeproj/          ← Xcode project file
-├── Chocobaki/
-│   ├── AppDelegate.swift
-│   ├── Assets.xcassets/
-│   │   └── AppIcon.appiconset/
-│   ├── Base.lproj/
-│   │   └── Main.storyboard
-│   ├── Info.plist
-│   └── ViewController.swift
+├── AppDelegate.swift       // App lifecycle entry point
+├── ViewController.swift    // UI logic for copying and playback
 └── README.md
-import Cocoa
+```
 
-@main
-class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ aNotification: Notification) { }
-    func applicationWillTerminate(_ aNotification: Notification) { }
-}
-import Cocoa
-import AVKit
+The repository snapshot focuses on the core Swift sources. You can recreate the full Xcode project by adding:
 
-class ViewController: NSViewController {
+- `Chocobaki.xcodeproj` with a macOS App target.
+- `Base.lproj/Main.storyboard` containing a text field (for the URL), a button wired to the action below, an `AVPlayerView`, and a status `NSTextField`.
+- `Assets.xcassets` with your app icon set.
+- `Info.plist` that includes any App Transport Security (ATS) exceptions your media URLs require (e.g., `NSAllowsArbitraryLoads` during development).
 
-    @IBOutlet weak var urlTextField: NSTextField!
-    @IBOutlet weak var playerView: AVPlayerView!
-    @IBOutlet weak var statusLabel: NSTextField!
+## View controller behavior
 
-    @IBAction func copyButtonClicked(_ sender: Any) {
-        let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let url = URL(string: urlString), url.scheme != nil else {
-            statusLabel.stringValue = "Invalid URL"
-            return
-        }
+`ViewController.swift` wires the UI to the clipboard and media playback:
 
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(urlString, forType: .string)
-        statusLabel.stringValue = "Copied to clipboard!"
+- Reads and trims the URL from the text field when the button is clicked.
+- Validates that the string is a valid URL with a scheme; otherwise updates the status label with `"Invalid URL"`.
+- Writes the URL to the general pasteboard and shows a `"Copied to clipboard!"` status message.
+- Instantiates `AVPlayer` with the URL, assigns it to the `AVPlayerView`, and starts playback.
 
-        playMedia(from: url)
-    }
+## Next steps
 
-    private func playMedia(from url: URL) {
-        let player = AVPlayer(url: url)
-        playerView.player = player
-        player.play()
-    }
-}
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-</dict>
-@IBOutlet weak var urlTextField: NSTextField!
-@IBOutlet weak var playerView: AVPlayerView!
-@IBOutlet weak var statusLabel: NSTextField!
-
-@IBAction func copyButtonClicked(_ sender: Any) {
-    let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard let url = URL(string: urlString), url.scheme != nil else {
-        statusLabel.stringValue = "Invalid URL"
-        return
-    }
-
-    let pasteboard = NSPasteboard.general
-    pasteboard.clearContents()
-    pasteboard.setString(urlString, forType: .string)
-    statusLabel.stringValue = "Copied to clipboard!"
-
-    playMedia(from: url)
-}
-
-private func playMedia(from url: URL) {
-    let player = AVPlayer(url: url)
-    playerView.player = player
-    player.play()
-}
+- Hook up the outlets/actions in Interface Builder to match the properties in `ViewController.swift`.
+- Add basic error handling for unreachable URLs or playback failures.
+- Refine ATS settings to limit allowed domains once your media sources are known.
